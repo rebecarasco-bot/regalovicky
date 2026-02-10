@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Misión Pokémon 🎮</title>
+
+<style>
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: linear-gradient(180deg, #dc2626, #7f1d1d);
+  color: white;
+  text-align: center;
+}
+.container { max-width: 500px; margin: auto; padding: 20px; }
+.card { background: #0f172a; border-radius: 20px; padding: 20px; margin-top: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.4); }
+.hidden { display: none; }
+button { background: #facc15; border: none; border-radius: 999px; padding: 15px 30px; font-size: 18px; margin-top: 15px; cursor: pointer; }
+.option { display: block; margin: 10px 0; background: #1e293b; padding: 12px; border-radius: 12px; cursor: pointer; }
+.option:hover { background: #334155; }
+input { padding: 12px; border-radius: 10px; border: none; font-size: 24px; text-transform: uppercase; width: 50px; text-align: center; margin:5px;}
+.word { font-size: 36px; letter-spacing: 8px; margin: 20px 0; }
+p { font-size: 18px; }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+<!-- PANTALLA INICIAL ORIGINAL -->
+<div id="start" class="card">
+  <h1>⚡ Misión Pokémon ⚡</h1>
+  <p>Solo un verdadero entrenador podrá desbloquear sus regalos.🎁 </p>
+  <button onclick="startQuiz()">COMENZAR</button>
+</div>
+
+<!-- QUIZ POKÉMON -->
+<div id="quiz" class="card hidden">
+  <h2 id="question">❓</h2>
+  <div id="options"></div>
+</div>
+
+<!-- PANTALLA DE INTRODUCCIÓN AHORCADO (SEGUNDA PRUEBA) -->
+<div id="moodsIntro" class="card hidden">
+  <h2>🧠¿Te conoces a ti mismo? 🧠</h2>
+  <p>A continuación tienes que acertar palabras relacionadas contigo y que te definen ✨</p>
+  <p>Presta atención a la pantalla: ahí encontrarás pistas 🎯</p>
+  <button onclick="nextMood()">EMPEZAR</button>
+</div>
+
+<!-- AHORCADO MOODS -->
+<div id="moods" class="card hidden">
+  <h2 id="moodTitle"></h2>
+  <div class="word" id="moodWord"></div>
+  <input id="moodLetter" maxlength="1" placeholder="Letra">
+  <br>
+  <button onclick="guessMood()">ATRAPAR LETRA ✨</button>
+  <p id="moodMsg"></p>
+</div>
+
+<!-- PANTALLA PALABRA CORRECTA -->
+<div id="moodCorrect" class="card hidden">
+  <h2>✅ ¡Palabra Correcta! 🎉</h2>
+  <p id="moodLeft"></p>
+  <button id="nextMoodBtn" onclick="nextMoodFromCorrect()">SIGUIENTE ➡️</button>
+</div>
+
+<!-- INTRO PRUEBA FINAL (MARIO KART) -->
+<div id="kartIntro" class="card hidden">
+  <h2>🎯 Prueba Final: ADIVINANZA 🎯</h2>
+  <p>Has superado la prueba anterior. Ahora llega la prueba final… prepárate para demostrar tu habilidad 🎮💨</p>
+  <button onclick="startKart()");">EMPEZAR </button>
+</div>
+
+<!-- PRUEBA MARIO KART -->
+<div id="kart" class="card hidden">
+  <h2>🏁Prueba de Velocidad 🏁</h2>
+  <p>No soy Pokémon, pero tengo carreras.<br>Caparazones vuela y platanos te comes ¿Quién soy? 💨🎯</p>
+  <input id="kartAnswer" placeholder="Respuesta" style="font-size: 36px; width: 250px; text-align:center; padding:15px; margin-top:10px;">
+  <br>
+  <button onclick="checkKart()" style="padding:15px 30px; font-size:20px; margin-top:15px;">RESPONDER</button>
+</div>
+
+<!-- FINAL -->
+<div id="end" class="card hidden">
+  <h1>🏆 MISIÓN COMPLETADA 🏆</h1>
+  <p>Has demostrado ser un auténtico Maestro Pokémon ⚡🎮</p>
+  <h2>🎮 Mario Kart para Nintendo 🏎️</h2>
+  <h2>☕ Una taza personalizada con todos tus moods ☕</h2>
+  <p>Ahora mira delante de ti 👀</p>
+</div>
+
+</div>
+
+<script>
+// ===== QUIZ POKÉMON =====
+const quiz = [
+  { q: "¿Cuántas evoluciones diferentes tiene Eevee actualmente?", options: ["6","7","8","9"], answer:2 },
+  { q: "¿En qué Pokémon evoluciona Eevee usando una Piedra Agua?", options: ["Vaporeon","Jolteon","Glaceon","Espeon"], answer:0 },
+  { q: "¿Cuál es el Pokémon primer Pokémon trans?", options: ["Ditto","Pikachu","Mudkip","Jynx"], answer:3 },
+  { q: "¿A partir de qué generación se introdujo el tipo Hada?", options: ["Generación 4","Generación 5","Generación 6","Generación 7"], answer:2 },
+  { q: "¿Qué generación es la región de Johto?", options: ["Primera","Segunda","Tercera","Cuarta"], answer:1 }
+];
+let current = 0;
+
+function startQuiz(){
+  document.getElementById("start").classList.add("hidden");
+  document.getElementById("quiz").classList.remove("hidden");
+  loadQuestion();
+}
+
+function loadQuestion(){
+  const q = quiz[current];
+  document.getElementById("question").innerText = q.q;
+  const opts = document.getElementById("options");
+  opts.innerHTML = "";
+  q.options.forEach((opt,i)=>{
+    const div = document.createElement("div");
+    div.className = "option";
+    div.innerText = opt;
+    div.onclick = ()=>checkAnswer(i);
+    opts.appendChild(div);
+  });
+}
+
+function checkAnswer(i){
+  if(i===quiz[current].answer){
+    current++;
+    if(current<quiz.length) loadQuestion();
+    else{
+      document.getElementById("quiz").classList.add("hidden");
+      document.getElementById("moodsIntro").classList.remove("hidden");
+    }
+  }else alert("❌ Incorrecto… Eevee te mira decepcionado 🦊");
+}
+
+// ===== AHORCADO MOODS =====
+const moodsWords = ["GUAPA","DIVA","FIESTAS","TECHNO","ANIMALES","ESTUDIANTE","VIAJES","PSICOLOGO"];
+const moodsEmojis = ["💄","✨","🎊","⛓️","🐶","👓","✈️","👂"];
+let moodIndex = 0;
+let guessed = [];
+
+function nextMood(){
+  document.getElementById("moodsIntro").classList.add("hidden");
+  if(moodIndex<moodsWords.length){
+    guessed = [];
+    document.getElementById("moodTitle").innerText = `Palabra ${moodIndex+1} de ${moodsWords.length} ${moodsEmojis[moodIndex]}`;
+    document.getElementById("moodWord").innerHTML = "_ ".repeat(moodsWords[moodIndex].length);
+    document.getElementById("moods").classList.remove("hidden");
+    document.getElementById("moodMsg").innerText = "";
+    document.getElementById("moodLetter").value="";
+  }else{
+    document.getElementById("moods").classList.add("hidden");
+    document.getElementById("kartIntro").classList.remove("hidden");
+  }
+}
+
+function guessMood(){
+  const input = document.getElementById("moodLetter");
+  const l = input.value.toUpperCase();
+  input.value="";
+  if(!l) return;
+  const word = moodsWords[moodIndex];
+  let updated = "";
+  let correctGuess = false;
+  for(let i=0;i<word.length;i++){
+    if(word[i]===l){
+      guessed[i]=l;
+      correctGuess = true;
+    }else if(guessed[i]){
+      // mantener letra ya adivinada
+    }else{
+      guessed[i]="_";
+    }
+    updated += guessed[i] ? guessed[i] + " " : "_ ";
+  }
+  document.getElementById("moodWord").innerText = updated;
+
+  if(!updated.includes("_")){
+    document.getElementById("moods").classList.add("hidden");
+    document.getElementById("moodCorrect").classList.remove("hidden");
+    const remaining = moodsWords.length - moodIndex - 1;
+    if(remaining>0){
+      document.getElementById("moodLeft").innerText = `Quedan ${remaining} palabra(s) por adivinar`;
+      document.getElementById("nextMoodBtn").innerText = "SIGUIENTE ➡️";
+    } else {
+      document.getElementById("moodLeft").innerText = "¡Prueba completada!";
+      document.getElementById("nextMoodBtn").innerText = "SIGUIENTE PRUEBA ➡️";
+    }
+  } else if(!correctGuess){
+    document.getElementById("moodMsg").innerText = "❌ Esa letra no está, intenta otra";
+  } else{
+    document.getElementById("moodMsg").innerText = "";
+  }
+}
+
+function nextMoodFromCorrect(){
+  moodIndex++;
+  document.getElementById("moodCorrect").classList.add("hidden");
+  nextMood();
+}
+
+// ===== PRUEBA MARIO KART =====
+function startKart(){
+  document.getElementById("kartIntro").classList.add("hidden");
+  document.getElementById("kart").classList.remove("hidden");
+}
+
+function checkKart(){
+  const ans = document.getElementById("kartAnswer").value.toUpperCase();
+  if(ans.includes("MARIO")){
+    document.getElementById("kart").classList.add("hidden");
+    document.getElementById("end").classList.remove("hidden");
+  }else alert("❌ No es correcto… intenta de nuevo 🏎️");
+}
+</script>
+
+</body>
+</html>
